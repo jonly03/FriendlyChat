@@ -25,14 +25,32 @@ class SignInViewController: UIViewController {
   @IBOutlet weak var passwordField: UITextField!
 
   override func viewDidAppear(_ animated: Bool) {
+    if let user = FIRAuth.auth()?.currentUser {
+        signedIn(user)
+    }
   }
 
   @IBAction func didTapSignIn(_ sender: AnyObject) {
-    signedIn(nil)
+    // Sign In with credentials.
+    guard let email = emailField.text, let password = passwordField.text else { return }
+    FIRAuth.auth()?.signIn(withEmail: email, password: password) { (user, error) in
+        if let error = error {
+            print(error.localizedDescription)
+            return
+        }
+        self.signedIn(user!)
+    }
   }
 
   @IBAction func didTapSignUp(_ sender: AnyObject) {
-    setDisplayName(nil)
+    guard let email = emailField.text, let password = passwordField.text else { return }
+    FIRAuth.auth()?.createUser(withEmail: email, password: password) { (user, error) in
+        if let error = error {
+            print(error.localizedDescription)
+            return
+        }
+        self.setDisplayName(user!)
+    }
   }
 
   func setDisplayName(_ user: FIRUser?) {
